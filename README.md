@@ -11,6 +11,13 @@ TorNet is a Python package that automates IP address changes using Tor. It is a 
 - **Protection from Tracking**: With your IP address changing frequently, tracking services and advertisers will find it more challenging to build a profile on you.
 - **Peace of Mind**: Knowing that your IP address is regularly changed can give you confidence in your online privacy and security.
 
+## Check IP
+```bash
+curl --socks5 127.0.0.1:9050 https://check.torproject.org/api/ip
+```
+## Check DNS Leak
+https://dnsleaktest.com/
+
 ## Installation
 
 To install TorNet, use pip:
