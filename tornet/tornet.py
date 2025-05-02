@@ -40,10 +40,21 @@ def start_tor_service():
         os.system("sudo service tor start")
 
 def reload_tor_service():
-    if is_arch_linux():
-        os.system("sudo systemctl reload tor")
+    # In Docker environment, send SIGHUP to the Tor process instead of using service commands
+    if os.environ.get('DOCKER_ENV'):
+        try:
+            # Find the Tor process ID
+            tor_pid = subprocess.check_output("pidof tor", shell=True).decode().strip()
+            if tor_pid:
+                # Send SIGHUP signal to reload Tor
+                os.system(f"kill -HUP {tor_pid}")
+        except subprocess.CalledProcessError:
+            print(f"{white} [{red}!{white}] {red}Unable to find Tor process. Please check if Tor is running.{reset}")
     else:
-        os.system("sudo service tor reload")
+        if is_arch_linux():
+            os.system("sudo systemctl reload tor")
+        else:
+            os.system("sudo service tor reload")
 
 def stop_tor_service():
     if is_arch_linux():
@@ -55,7 +66,9 @@ def initialize_environment():
     install_pip()
     install_requests()
     install_tor()
-    start_tor_service()
+    # Skip starting Tor service if running in Docker
+    if not os.environ.get('DOCKER_ENV'):
+        start_tor_service()
     print_start_message()
 
 def print_start_message():
@@ -140,7 +153,20 @@ def auto_fix():
     os.system("pip3 install --upgrade tornet")
 
 def stop_services():
-    stop_tor_service()
+    # In Docker environment, find and kill the Tor process directly
+    if os.environ.get('DOCKER_ENV'):
+        try:
+            # Find the Tor process ID
+            tor_pid = subprocess.check_output("pidof tor", shell=True).decode().strip()
+            if tor_pid:
+                # Kill the Tor process
+                os.system(f"kill {tor_pid}")
+                print(f"{white} [{green}+{white}]{green} Tor process stopped.{reset}")
+        except subprocess.CalledProcessError:
+            print(f"{white} [{red}!{white}] {red}No Tor process found to stop.{reset}")
+    else:
+        stop_tor_service()
+    
     os.system(f"pkill -f {TOOL_NAME} > /dev/null 2>&1")
     print(f"{white} [{green}+{white}]{green} Tor services and {TOOL_NAME} processes stopped.{reset}")
 
