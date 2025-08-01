@@ -15,6 +15,7 @@ RUN apt-get update && \
         python3-pip \
         sudo \
         procps \
+	snowflake-client \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -40,7 +41,13 @@ RUN echo "SocksPort 0.0.0.0:9050" > /etc/tor/torrc \
     && echo "SocksPolicy accept *" >> /etc/tor/torrc \
     && echo "Log notice stdout" >> /etc/tor/torrc \
     && echo "DataDirectory /var/lib/tor" >> /etc/tor/torrc \
-    && echo "RunAsDaemon 0" >> /etc/tor/torrc
+    && echo "RunAsDaemon 0" >> /etc/tor/torrc \
+    && echo "UseBridges 1
+
+ClientTransportPlugin snowflake exec /usr/bin/snowflake-client -url https://snowflake-broker.torproject.net/ -ampcache https://cdn.ampproject.org/ -front www.google.com -ice stun:stun.l.google.com:19302,stun:stun.antisip.com:3478,stun:stun.bluesip.net:3478,stun:stun.dus.net:3478,stun:stun.epygi.com:3478,stun:stun.sonetel.com:3478,stun:stun.uls.co.za:3478,stun:stun.voipgate.com:3478,stun:stun.voys.nl:3478 utls-imitate=hellorandomizedalpn -log /var/log/tor/snowflake-client.log
+
+Bridge snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72
+#Bridge snowflake 192.0.2.4:80 8838024498816A039FCBBAB14E6F40A0843051FA" >> /etc/tor/torrc
 
 # Expose the Tor SOCKS proxy port
 EXPOSE 9050
